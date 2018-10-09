@@ -1,6 +1,7 @@
 import requests
 import traceback
 import json
+import jellyfish
 from bs4 import BeautifulSoup
 
 
@@ -11,18 +12,106 @@ class Marathon():
     def __init__(self):
         pass
 
-    def get_marathon_data(self, date_range=None, type1=None, cities=None, start_date=None, end_date=None):
+    def get_marathon_data(self, date_range=None, type1=None, cities=None, month=None):
+
+        print(date_range, "date_range", "\n")
+        print(type1, "type1", "\n")
+        print(cities, "cities", "\n")
+        print(month, "month", "\n")
 
         base_url = "http://indiarunning.com/race-finder.html"
         # example :
         # http://indiarunning.com/race-finder.html?DateRange=all&type1=10k,5k&Cities=Mumbai&From=2018-10-07&To=2018-10-12
 
+        # sanitizing the data
+        city_map = {
+            'JPR': "Jaipur",
+            'MMB': "Mumbai",
+            'BNKLR': "Bengaluru",
+            'XN': "Chennai",
+            'HTRBT': "Hyderabad",
+            'KLKT': "Kolkata",
+            'PN': "Pune",
+            'TLH': "Delhi",
+            'KMBTR': "Coimbatore",
+            'AMTBT': "Ahmedabad"
+        }
+
+        race_type_map = {
+            '5kae': "5k",
+            'fivek': "5k",
+            'five k': "5k",
+            '5k': "5k",
+
+            '2kae': "2k",
+            'twok': "2k",
+            'two k': "2k",
+            '2k': "2k",
+
+            '10kae': "10k",
+            'tenk': "10k",
+            '10 k': "10k",
+            '10k': "10k",
+
+            'half marathon': "Half",
+            'half': "Half",
+            '21k': "Half",
+            'Half': "Half",
+            'half run': "Half",
+
+            'full marathon': "Full",
+            'full': "Full",
+            '42k': "Full",
+            'Full': "Full",
+            'full run': "Full"
+
+        }
+
+        date_range_map = {
+            'next weekend': "week1",
+            'weekend': "week1",
+
+            'next month': "month1",
+            'month': "month1"
+        }
+
+        month_map = {
+            'January': "Jan",
+            'February': "Feb",
+            'March': "Mar",
+            'April': "Apr",
+            'May': "May",
+            'June': "Jun",
+            'July': "Jul",
+            'August': "Aug",
+            'September': "Sep",
+            'October': "Oct",
+            'November': "Nov",
+            'December': "Dec"
+        }
+
+        if cities:
+            try:
+                city_approx = jellyfish.metaphone(str(cities))
+                cities = city_map.get(str(city_approx))
+            except Exception as e:
+                city_approx = None
+                pass
+
+        if type1:
+            type1 = race_type_map.get(str(type1))
+
+        if date_range:
+            date_range = date_range_map.get(str(date_range))
+
+        if month:
+            month = month_map.get(str(month))
+
         params = {
             'DateRange': date_range,
             'type1': type1,
             'Cities': cities,
-            'From': start_date,
-            'To': end_date
+            'Months': month
         }
 
         request_headers = {
@@ -40,9 +129,6 @@ class Marathon():
                 tmp = False
 
         try:
-
-            print(base_url)
-
             html_request = requests.get(base_url)
             html = BeautifulSoup(html_request.text, 'html.parser')
             res = []

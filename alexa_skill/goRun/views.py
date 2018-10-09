@@ -19,14 +19,13 @@ class getmarathonDataViewSet(APIView):
     def get(self, request):
         '''
         '''
-        date_range = request.query_params.get('DateRange')
+        date_range = request.query_params.get('DateRange', 'all')
         type1 = request.query_params.get('type1')
         cities = request.query_params.get('Cities')
-        start_date = request.query_params.get('From')
-        end_date = request.query_params.get('To')
+        month = request.query_params.get('month')
 
         err, res = self.marathon_data_handler.get_marathon_data(
-            date_range=date_range, type1=type1, cities=cities, start_date=start_date, end_date=end_date)
+            date_range=date_range, type1=type1, cities=cities, month=month)
         if err:
             return JsonResponse({'message': "some error occured !!", 'statusCode': 400})
         return JsonResponse({'data': res, 'statusCode': 200})
