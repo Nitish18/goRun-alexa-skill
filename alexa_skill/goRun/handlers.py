@@ -14,11 +14,6 @@ class Marathon():
 
     def get_marathon_data(self, date_range=None, type1=None, cities=None, month=None):
 
-        print(date_range, "date_range", "\n")
-        print(type1, "type1", "\n")
-        print(cities, "cities", "\n")
-        print(month, "month", "\n")
-
         base_url = "http://indiarunning.com/race-finder.html"
         # example :
         # http://indiarunning.com/race-finder.html?DateRange=all&type1=10k,5k&Cities=Mumbai&From=2018-10-07&To=2018-10-12
@@ -68,26 +63,25 @@ class Marathon():
         }
 
         date_range_map = {
-            'next weekend': "week1",
-            'weekend': "week1",
-
-            'next month': "month1",
-            'month': "month1"
+            'NKSTWKNT': "week1",
+            'NKST WKNT': "week1",
+            'NKST MN0': "month1",
+            'NKSTMN0': "month1"
         }
 
         month_map = {
-            'January': "Jan",
-            'February': "Feb",
-            'March': "Mar",
-            'April': "Apr",
-            'May': "May",
-            'June': "Jun",
-            'July': "Jul",
-            'August': "Aug",
-            'September': "Sep",
-            'October': "Oct",
-            'November': "Nov",
-            'December': "Dec"
+            'JNR': "Jan",
+            'FBRR': "Feb",
+            'MRX': "Mar",
+            'APRL': "Apr",
+            'M': "May",
+            'JN': "Jun",
+            'JL': "Jul",
+            'AKST': "Aug",
+            'SPTMBR': "Sep",
+            'OKTBR': "Oct",
+            'NFMBR': "Nov",
+            'TSMBR': "Dec"
         }
 
         if cities:
@@ -102,10 +96,14 @@ class Marathon():
             type1 = race_type_map.get(str(type1))
 
         if date_range:
-            date_range = date_range_map.get(str(date_range))
+            date_range_approx = jellyfish.metaphone(str(date_range))
 
-        if month:
-            month = month_map.get(str(month))
+            if date_range_map.get(str(date_range_approx)):
+                date_range = date_range_map.get(str(date_range_approx))
+
+            if month_map.get(str(date_range_approx)):
+                month = month_map.get(str(date_range_approx))
+                date_range = None
 
         params = {
             'DateRange': date_range,
@@ -129,6 +127,7 @@ class Marathon():
                 tmp = False
 
         try:
+            print(base_url, "\n", "!!!")
             html_request = requests.get(base_url)
             html = BeautifulSoup(html_request.text, 'html.parser')
             res = []
